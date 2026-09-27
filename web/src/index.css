@@ -1,0 +1,117 @@
+@import "tailwindcss";
+
+/*
+  motion tokens — transitions.dev scale
+  open 250ms, close 150ms, pre-scale 0.97, ease cubic-bezier(0.22,1,0.36,1)
+*/
+:root {
+  --p1: 120ms;
+  --p2-open: 250ms;
+  --p2-close: 150ms;
+  --p2-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --pre-scale: 0.97;
+}
+
+@theme {
+  --color-bg: #0f0f0f;
+  --color-card: #1a1a1a;
+  --color-line: rgba(255, 255, 255, 0.08);
+  --color-fg: #f4f4f4;
+  --color-muted: #8a8a8a;
+  --color-accent: #857df5;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+html {
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* slim scrollbars, command row only shows its bar on hover */
+code::-webkit-scrollbar {
+  height: 6px;
+}
+code::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+  opacity: 0;
+}
+code:hover::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* panel reveal — transitions.dev: pre-scaled, expo-out */
+@keyframes panel-in {
+  from {
+    opacity: 0;
+    transform: scale(var(--pre-scale)) translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.reveal {
+  animation: panel-in var(--p2-open) var(--p2-ease) both;
+}
+
+.reveal-stagger > * {
+  animation: panel-in var(--p2-open) var(--p2-ease) both;
+}
+.reveal-stagger > *:nth-child(2) { animation-delay: 45ms; }
+.reveal-stagger > *:nth-child(3) { animation-delay: 90ms; }
+
+/* slot-text roll cell — textmotion.dev: 300ms roll, transform only, clipped cell */
+.slot-cell {
+  display: inline-block;
+  position: relative;
+  overflow: hidden;
+  height: 1.5em;
+  vertical-align: bottom;
+}
+
+.slot-face {
+  display: block;
+  line-height: 1.5em;
+  will-change: transform;
+}
+
+.slot-face.in {
+  animation: slot-in 300ms var(--p2-ease) both;
+}
+
+.slot-face.out {
+  position: absolute;
+  inset: 0;
+  animation: slot-out 300ms var(--p2-ease) both;
+}
+
+@keyframes slot-in {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes slot-out {
+  from { transform: translateY(0); }
+  to { transform: translateY(-100%); }
+}
+
+::selection {
+  background: var(--color-accent);
+  color: #fff;
+}
+
+/* error state shake — transitions.dev catalog */
+@keyframes shake {
+  10%, 90% { transform: translateX(-1px); }
+  20%, 80% { transform: translateX(2px); }
+  30%, 50%, 70% { transform: translateX(-3px); }
+  40%, 60% { transform: translateX(3px); }
+}
+
+.animate-shake {
+  animation: shake 400ms var(--p2-ease) both;
+}
