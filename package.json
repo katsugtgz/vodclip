@@ -1,0 +1,14 @@
+{
+  "name": "vodclip",
+  "version": "0.1.0",
+  "description": "Cut a timestamped clip from a Twitch or Kick VOD. One command, no account, minimal deps (uses yt-dlp).",
+  "license": "MIT",
+  "type": "module",
+  "bin": { "vodclip": "cli.mjs" },
+  "files": ["cli.mjs", "README.md"],
+  "engines": { "node": ">=18" },
+  "keywords": ["twitch", "kick", "vod", "clip", "downloader", "yt-dlp", "timestamp"],
+  "dependencies": {
+    "@clack/prompts": "^0.11.0"
+  }
+}
