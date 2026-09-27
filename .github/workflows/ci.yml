@@ -49,8 +49,8 @@ jobs:
         run: |
           node cli.mjs "https://www.twitch.tv/videos/2883843627" 0:00:00 30 --dry-run > out.txt
           cat out.txt
-          grep -q -- "--download-sections \"*00:00:00-00:00:30\"" out.txt
-          grep -q -- "--force-keyframes-at-cuts" out.txt
+          grep -qF -- '--download-sections "*00:00:00-00:00:30"' out.txt
+          grep -qF -- '--force-keyframes-at-cuts' out.txt
       - name: Rejects bad URLs
         run: |
           if node cli.mjs "https://youtube.com/watch?v=x" --dry-run > /dev/null 2>&1; then

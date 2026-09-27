@@ -26,7 +26,7 @@
   ],
   "scripts": {
     "test": "node --test",
-    "test:coverage": "node --test --experimental-test-coverage test/",
+    "test:coverage": "node --test --experimental-test-coverage",
     "lint": "eslint .",
     "dry-run": "node cli.mjs \"https://www.twitch.tv/videos/2883843627\" 0:00:00 30 --dry-run"
   },
