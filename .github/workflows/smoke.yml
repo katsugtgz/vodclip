@@ -1,0 +1,48 @@
+# Live smoke test against real platforms.
+#
+# Third-party sites go down and change APIs without notice. Those failures must
+# not block everyday development, so this job runs on a weekly schedule and on
+# demand, never on pull requests. On failure it opens an issue, because nobody
+# watches scheduled jobs otherwise.
+#
+# Requires no secrets: public VOD, no auth, yt-dlp from pip.
+
+name: Live smoke
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * 1" # Mondays 06:00 UTC
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Install yt-dlp
+        run: python -m pip install --user yt-dlp && echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - name: Cut a 5s clip from a public Twitch VOD
+        run: |
+          node cli.mjs "https://www.twitch.tv/videos/2883843627" 0:00:00 5
+          f=$(ls twitch_2883843627_000000.mp4)
+          test -s "$f"
+          echo "smoke OK: $f ($(stat -c%s "$f") bytes)"
+      - name: Open issue on failure
+        if: failure()
+        uses: actions/github-script@v8
+        with:
+          script: |
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Live smoke failed on ${new Date().toISOString().slice(0, 10)}`,
+              body: `Run: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+              labels: ["ci", "smoke"],
+            });

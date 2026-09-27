@@ -1,0 +1,40 @@
+# Publishing driven by release tags: merge, tag vX.Y.Z, push. This picks it up.
+#
+# Uses npm trusted publishing: GitHub exchanges a short-lived OIDC token for
+# publish rights. No NPM_TOKEN secret stored anywhere, and npm shows a
+# provenance attestation on the package page.
+#
+# One-time setup on npmjs.com: package settings -> Trusted Publisher ->
+# point at this repository and workflow file (publish.yml). For the first
+# publish, npm creates the package from the trusted-publisher claim.
+
+name: Publish
+
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # create the GitHub release
+      id-token: write # OIDC for npm trusted publishing
+    environment: npm
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          registry-url: "https://registry.npmjs.org"
+      - run: npm ci
+      - run: npm test
+      - name: Check tag matches package version
+        run: |
+          pkg="v$(node -p "require('./package.json').version")"
+          test "v${GITHUB_REF_NAME#v}" = "$pkg" || { echo "tag $GITHUB_REF_NAME != $pkg"; exit 1; }
+      - run: npm publish --provenance
+      - name: GitHub release
+        run: gh release create "$GITHUB_REF_NAME" --generate-notes
+        env:
+          GH_TOKEN: ${{ github.token }}

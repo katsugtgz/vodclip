@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [20, 22]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - name: Coverage
+        if: matrix.node == 22
+        run: npm run test:coverage
+
+  dry-run:
+    # Offline end-to-end: full CLI path against a real URL, yt-dlp command printed, nothing downloaded.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Dry run
+        run: |
+          node cli.mjs "https://www.twitch.tv/videos/2883843627" 0:00:00 30 --dry-run > out.txt
+          cat out.txt
+          grep -q -- "--download-sections \"*00:00:00-00:00:30\"" out.txt
+          grep -q -- "--force-keyframes-at-cuts" out.txt
+      - name: Rejects bad URLs
+        run: |
+          if node cli.mjs "https://youtube.com/watch?v=x" --dry-run > /dev/null 2>&1; then
+            echo "expected non-zero exit for non-platform URL" && exit 1
+          fi

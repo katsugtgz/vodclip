@@ -1,5 +1,7 @@
 # vodclip
 
+[![CI](https://github.com/katsugtgz/vodclip/actions/workflows/ci.yml/badge.svg)](https://github.com/katsugtgz/vodclip/actions/workflows/ci.yml)
+
 Cut a clip from a Twitch or Kick VOD at a start timestamp. One command runs yt-dlp with the correct options. Public VODs need no account.
 
 ```bash
@@ -48,6 +50,22 @@ The tool writes `<platform>_<vod-id>_<HHMMSS>.mp4` to the current directory. It 
 
 - vodclip supports public VODs only. Sub-only VODs need a platform login, and the tool does not handle logins.
 - A large start timestamp makes the download slow. yt-dlp streams from the start of the VOD to your cut point. Wait for the download to finish.
+
+## Development
+
+```bash
+npm install
+npm test            # unit tests (node:test)
+npm run test:coverage
+npm run lint
+npm run dry-run     # prints the yt-dlp command without downloading
+```
+
+## Releases
+
+Releases are tag driven. Push a tag that matches the `package.json` version (example: tag `v0.2.0` for version `0.2.0`), and the Publish workflow tests, publishes to npm with provenance, and opens a GitHub release. It uses npm trusted publishing, so no `NPM_TOKEN` secret is stored. One-time setup: add this repo and workflow as a Trusted Publisher in the npm package settings.
+
+A weekly live smoke test cuts a 5-second clip from a public VOD. It opens an issue when it fails.
 
 ## License
 
