@@ -33,7 +33,7 @@ Twitch clip and Kick clip URLs download the full clip. The tool ignores timestam
 
 ## Output
 
-The tool writes `<platform>_<vod-id>_<HHMMSS>.mp4` to the current directory. It sets `--force-keyframes-at-cuts`, so the clip starts on a keyframe and plays without artifacts.
+The tool writes `<platform>_<vod-id>_<HHMMSS>.mp4` to the current directory. It sets `--force-keyframes-at-cuts`, so the clip starts on a keyframe.
 
 ## Requirements
 
@@ -46,7 +46,7 @@ The tool writes `<platform>_<vod-id>_<HHMMSS>.mp4` to the current directory. It 
 
 ## Notes
 
-- The tool supports public VODs only. Sub-only VODs need a platform login, and this tool does not handle logins.
+- vodclip supports public VODs only. Sub-only VODs need a platform login, and the tool does not handle logins.
 - A large start timestamp makes the download slow. yt-dlp streams from the start of the VOD to your cut point. Wait for the download to finish.
 
 ## License
