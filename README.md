@@ -1,6 +1,6 @@
 # vodclip
 
-Cut a timestamped clip from a **Twitch** or **Kick** VOD in one command. No account, no login, minimal deps — it drives `yt-dlp` for you.
+Cut a clip from a Twitch or Kick VOD at a start timestamp. One command runs yt-dlp with the correct options. Public VODs need no account.
 
 ```bash
 npx vodclip@latest <url> [start] [duration]
@@ -22,32 +22,32 @@ npx vodclip@latest "https://kick.com/video/some-uuid" 1h2m3s 90
 npx vodclip@latest
 ```
 
-Twitch clip / Kick clip URLs download the whole clip — no timestamps needed.
+Twitch clip and Kick clip URLs download the full clip. The tool ignores timestamps for clips.
 
 ## Input formats
 
-| Field     | Accepted                                    |
-|-----------|---------------------------------------------|
-| start     | `09h25m19s`, `09:25:19`, `5559` (seconds), `?t=` in URL |
-| duration  | whole seconds (default `120`)               |
+| Field    | Accepted                                                |
+|----------|----------------------------------------------------------|
+| start    | `09h25m19s`, `09:25:19`, `5559` (seconds), `?t=` in URL |
+| duration | whole seconds (default `120`)                           |
 
 ## Output
 
-`<platform>_<vod-id>_<HHMMSS>.mp4` in the current directory, cut on keyframes (`--force-keyframes-at-cuts`) so the clip starts clean.
+The tool writes `<platform>_<vod-id>_<HHMMSS>.mp4` to the current directory. It sets `--force-keyframes-at-cuts`, so the clip starts on a keyframe and plays without artifacts.
 
 ## Requirements
 
-- [Node.js](https://nodejs.org) ≥ 18
+- [Node.js](https://nodejs.org) 18 or later
 - [yt-dlp](https://github.com/yt-dlp/yt-dlp) on PATH:
   - Windows: `winget install yt-dlp.yt-dlp`
   - macOS: `brew install yt-dlp`
   - Linux: `pipx install yt-dlp`
-- Kick VODs sit behind Cloudflare; if yt-dlp's automatic impersonation fails: `pip install -U "yt-dlp[default,curl-cffi]"`
+- Kick VODs sit behind Cloudflare. yt-dlp impersonates a browser automatically. If that fails, install the impersonation extras: `pip install -U "yt-dlp[default,curl-cffi]"`
 
 ## Notes
 
-- Public VODs only — sub-only VODs require platform auth, which this tool intentionally does not handle.
-- Long start timestamps are inherently slow: yt-dlp must stream from the VOD's beginning to your cut point. That's normal, let it run.
+- The tool supports public VODs only. Sub-only VODs need a platform login, and this tool does not handle logins.
+- A large start timestamp makes the download slow. yt-dlp streams from the start of the VOD to your cut point. Wait for the download to finish.
 
 ## License
 
