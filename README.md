@@ -51,6 +51,8 @@ The tool writes `<platform>_<vod-id>_<HHMMSS>.mp4` to the current directory. It 
 - vodclip supports public VODs only. Sub-only VODs need a platform login, and the tool does not handle logins.
 - A large start timestamp makes the download slow. yt-dlp streams from the start of the VOD to your cut point. Wait for the download to finish.
 
+A web UI lives at [katsugtgz.github.io/vodclip](https://katsugtgz.github.io/vodclip/). Paste a link, tune start and duration, copy the command. It builds the command in the browser and deep-links with `?u=<url>&t=<start>&d=<seconds>`.
+
 ## Development
 
 ```bash
