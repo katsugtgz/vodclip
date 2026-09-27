@@ -40,10 +40,13 @@ The tool writes `<platform>_<vod-id>_<HHMMSS>.mp4` to the current directory. It 
 ## Requirements
 
 - [Node.js](https://nodejs.org) 18 or later
-- [yt-dlp](https://github.com/yt-dlp/yt-dlp) on PATH:
-  - Windows: `winget install yt-dlp.yt-dlp`
-  - macOS: `brew install yt-dlp`
-  - Linux: `pipx install yt-dlp`
+
+yt-dlp is the only other requirement, and vodclip offers to install it for you: if it is missing, the CLI probes the system for a package manager (winget, brew, scoop, choco, pipx, uv) and asks before running anything. `--no-install` skips the prompt and fails fast instead. ffmpeg is checked the same way, because cutting at exact timestamps needs it.
+
+Manual installs:
+- Windows: `winget install -e --id yt-dlp.yt-dlp`
+- macOS: `brew install yt-dlp`
+- Linux: `pipx install yt-dlp`
 - Kick VODs sit behind Cloudflare. yt-dlp impersonates a browser automatically. If that fails, install the impersonation extras: `pip install -U "yt-dlp[default,curl-cffi]"`
 
 ## Notes
