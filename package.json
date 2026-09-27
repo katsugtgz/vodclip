@@ -4,10 +4,26 @@
   "description": "Cut a timestamped clip from a Twitch or Kick VOD. One command, no account, minimal deps (uses yt-dlp).",
   "license": "MIT",
   "type": "module",
-  "bin": { "vodclip": "cli.mjs" },
-  "files": ["cli.mjs", "lib.mjs", "README.md"],
-  "engines": { "node": ">=18" },
-  "keywords": ["twitch", "kick", "vod", "clip", "downloader", "yt-dlp", "timestamp"],
+  "bin": {
+    "vodclip": "cli.mjs"
+  },
+  "files": [
+    "cli.mjs",
+    "lib.mjs",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "twitch",
+    "kick",
+    "vod",
+    "clip",
+    "downloader",
+    "yt-dlp",
+    "timestamp"
+  ],
   "scripts": {
     "test": "node --test",
     "test:coverage": "node --test --experimental-test-coverage test/",
@@ -15,7 +31,7 @@
     "dry-run": "node cli.mjs \"https://www.twitch.tv/videos/2883843627\" 0:00:00 30 --dry-run"
   },
   "dependencies": {
-    "@clack/prompts": "^0.11.0"
+    "@clack/prompts": "^1.8.1"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
