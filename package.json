@@ -28,10 +28,14 @@
     "test": "node --test",
     "test:coverage": "node --test --experimental-test-coverage",
     "lint": "eslint .",
-    "dry-run": "node cli.mjs \"https://www.twitch.tv/videos/2883843627\" 0:00:00 30 --dry-run"
+    "dry-run": "node cli.mjs \"https://www.twitch.tv/videos/2883843627\" 0:00:00 30 --dry-run",
+    "test:pipeline": "bun test pipeline/",
+    "pipeline": "bun pipeline/run.ts",
+    "queue": "bun pipeline/queue.ts"
   },
   "dependencies": {
-    "@clack/prompts": "^1.8.1"
+    "@clack/prompts": "^1.8.1",
+    "hono": "^4.13.12"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

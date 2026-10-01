@@ -3,3 +3,6 @@ node_modules/
 *.mp4
 
 web/dist/
+
+# pipeline working data (re-downloadable: chat JSON, previews, wavs)
+work/
