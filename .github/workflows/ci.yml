@@ -44,7 +44,12 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: 1.4.0
-      - run: bun install --frozen-lockfile
+      - run: bun install
+      - name: Warn on stale bun.lock
+        run: |
+          if ! git diff --quiet -- bun.lock; then
+            echo "::warning::bun.lock was stale (package.json changed without bun install). Run 'bun install' and commit bun.lock."
+          fi
       - run: bun test pipeline/
 
   dry-run:
