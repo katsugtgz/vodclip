@@ -43,3 +43,22 @@ export function classify(rawUrl) {
   }
   return null;
 }
+
+// yt-dlp argv, one option per element. spawnSync() without a shell passes argv
+// verbatim on Linux/macOS, so folding a value into the option string
+// (`--download-sections "*a-b"`) reaches yt-dlp as a single unknown option and
+// fails with "no such option". Keep options and values separate.
+export function buildYtArgs({ url, outName, start = null, end = null }) {
+  const args = ["--force-keyframes-at-cuts", "-o", outName];
+  if (start != null && end != null) {
+    args.unshift("--download-sections", `*${fmt(start)}-${fmt(end)}`);
+  }
+  args.push(url);
+  return args;
+}
+
+// Rendering for --dry-run: quote what a shell would split or glob, so the
+// printed command can be pasted as-is.
+export function shellQuote(arg) {
+  return /^[\w@%+=:,./-]+$/.test(arg) ? arg : `"${arg.replace(/(["\\$`])/g, "\\$1")}"`;
+}

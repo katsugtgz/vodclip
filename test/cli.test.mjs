@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { parseStart, fmt, classify } from "../lib.mjs";
+import { parseStart, fmt, classify, buildYtArgs, shellQuote } from "../lib.mjs";
 
 test("parseStart: h/m/s letters", () => {
   assert.equal(parseStart("09h25m19s"), 33919);
@@ -75,4 +75,37 @@ test("classify: rejects non-platform urls", () => {
 
 test("classify: subdomain stripped", () => {
   assert.equal(classify("https://m.twitch.tv/videos/99").id, "99");
+});
+
+test("buildYtArgs: --download-sections stays a separate argv element", () => {
+  const args = buildYtArgs({
+    url: "https://www.twitch.tv/videos/1",
+    outName: "twitch_1_000000.%(ext)s",
+    start: 0,
+    end: 30,
+  });
+  assert.deepEqual(args, [
+    "--download-sections",
+    "*00:00:00-00:00:30",
+    "--force-keyframes-at-cuts",
+    "-o",
+    "twitch_1_000000.%(ext)s",
+    "https://www.twitch.tv/videos/1",
+  ]);
+  // spawnSync() without a shell does not split or unquote: an option folded into
+  // one string reaches yt-dlp as an unknown option ("no such option"), which is
+  // how cutting broke on Linux and macOS.
+  for (const a of args) assert.ok(!/^--\S+\s/.test(a), `option folded into one arg: ${a}`);
+});
+
+test("buildYtArgs: clips pass no section, url last", () => {
+  const args = buildYtArgs({ url: "https://kick.com/clips/abc", outName: "kick_clip_abc.%(ext)s" });
+  assert.ok(!args.includes("--download-sections"));
+  assert.equal(args.at(-1), "https://kick.com/clips/abc");
+});
+
+test("shellQuote: quotes only what a shell would split or glob", () => {
+  assert.equal(shellQuote("--force-keyframes-at-cuts"), "--force-keyframes-at-cuts");
+  assert.equal(shellQuote("*00:00:00-00:00:30"), "\"*00:00:00-00:00:30\"");
+  assert.equal(shellQuote("a b"), "\"a b\"");
 });

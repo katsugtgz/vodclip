@@ -26,8 +26,16 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: Install yt-dlp
-        run: python -m pip install --user yt-dlp && echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - name: Install ffmpeg and yt-dlp
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+          python -m pip install --user --upgrade yt-dlp
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - name: Tool versions
+        run: |
+          yt-dlp --version
+          ffmpeg -version | head -1
       - name: Cut a 5s clip from a public Twitch VOD
         run: |
           node cli.mjs "https://www.twitch.tv/videos/2883843627" 0:00:00 5

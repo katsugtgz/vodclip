@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { spawnSync } from "node:child_process";
 import * as p from "@clack/prompts";
-import { parseStart, fmt, classify } from "./lib.mjs";
+import { parseStart, fmt, classify, buildYtArgs, shellQuote } from "./lib.mjs";
 
 // ---------- system probe ----------
 
@@ -220,15 +220,17 @@ const outName = isClip
   ? `${info.platform}_clip_${info.id}.%(ext)s`
   : `${info.platform}_${info.id}_${fmt(info.start).replace(/:/g, "")}.%(ext)s`;
 
-const ytArgs = ["--force-keyframes-at-cuts", "-o", outName, info.url];
-if (!isClip) {
-  ytArgs.unshift(`--download-sections "*${fmt(info.start)}-${fmt(end)}"`);
-}
+const ytArgs = buildYtArgs({
+  url: info.url,
+  outName,
+  start: isClip ? null : info.start,
+  end: isClip ? null : end,
+});
 
 p.log.step(`${info.platform} ${info.kind} ${info.id}` + (isClip ? "" : ` | ${fmt(info.start)} → ${fmt(end)} (${info.duration}s)`));
 
 if (dryRun) {
-  p.log.info(`[dry run] yt-dlp ${ytArgs.join(" ")}`);
+  p.log.info(`[dry run] yt-dlp ${ytArgs.map(shellQuote).join(" ")}`);
   p.outro("Dry run complete. No file downloaded.");
   process.exit(0);
 }
