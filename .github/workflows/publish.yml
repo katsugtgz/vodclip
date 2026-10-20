@@ -4,9 +4,17 @@
 # publish rights. No NPM_TOKEN secret stored anywhere, and npm shows a
 # provenance attestation on the package page.
 #
-# One-time setup on npmjs.com: package settings -> Trusted Publisher ->
-# point at this repository and workflow file (publish.yml). For the first
-# publish, npm creates the package from the trusted-publisher claim.
+# One-time setup, in this order:
+#   1. The package must already exist on npm before a trusted publisher can be
+#      attached (npm cannot create a package from a trusted-publisher claim), so
+#      the very first version is published from a maintainer machine with 2FA:
+#      `npm publish --access public`.
+#   2. npmjs.com -> package settings -> Trusted Publisher -> point at this
+#      repository, this workflow file (publish.yml) and the `npm` environment.
+#   3. Optionally disallow token publishing so only this workflow can publish.
+#
+# Trusted publishing needs npm CLI 11.5.1 or later. Node 22 still ships npm 10,
+# so the job upgrades npm before publishing.
 
 name: Publish
 
@@ -27,6 +35,10 @@ jobs:
         with:
           node-version: 22
           registry-url: "https://registry.npmjs.org"
+      - name: npm CLI for trusted publishing
+        run: |
+          npm install -g npm@latest
+          npm --version
       - run: npm ci
       - run: npm test
       - name: Check tag matches package version

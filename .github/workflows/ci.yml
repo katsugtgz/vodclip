@@ -35,6 +35,18 @@ jobs:
         if: matrix.node == 22
         run: npm run test:coverage
 
+  pipeline:
+    # bun-only tooling (pipeline/, bun.lock). Kept out of `npm test` so the Node
+    # test job only runs the published CLI's tests; this job catches bun.lock drift.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.0
+      - run: bun install --frozen-lockfile
+      - run: bun test pipeline/
+
   dry-run:
     # Offline end-to-end: full CLI path against a real URL, yt-dlp command printed, nothing downloaded.
     runs-on: ubuntu-latest

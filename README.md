@@ -58,17 +58,45 @@ A web UI lives at [katsugtgz.github.io/vodclip](https://katsugtgz.github.io/vodc
 
 ## Development
 
+Two toolchains, split on purpose. The published CLI runs on Node, because users
+run it with `npx` and `engines` says Node 18 or later. The auto-clipper pipeline
+runs on Bun, because it uses `bun:sqlite`, `Bun.serve`, `Bun.file` and
+`bun:test`, and it is not part of the published package.
+
 ```bash
 npm install
-npm test            # unit tests (node:test)
+npm test             # CLI unit tests (node:test, test/)
 npm run test:coverage
 npm run lint
-npm run dry-run     # prints the yt-dlp command without downloading
+npm run dry-run      # prints the yt-dlp command without downloading
+
+bun install                  # pipeline deps, from bun.lock
+bun test pipeline/           # pipeline tests (bun:test)
+bun pipeline/run.ts <vodId>  # chat -> detect -> judge -> preview
+bun pipeline/queue.ts <vodId> # blind-first review queue on :8790
 ```
 
 ## Releases
 
-Releases are tag driven. Push a tag that matches the `package.json` version (example: tag `v0.2.0` for version `0.2.0`), and the Publish workflow tests, publishes to npm with provenance, and opens a GitHub release. It uses npm trusted publishing, so no `NPM_TOKEN` secret is stored. One-time setup: add this repo and workflow as a Trusted Publisher in the npm package settings.
+Releases are tag driven. Push a tag that matches the `package.json` version
+(example: tag `v0.2.1` for version `0.2.1`), and the Publish workflow tests,
+publishes to npm with provenance, and opens a GitHub release.
+
+The first publish is the exception. npm only lets you attach a Trusted Publisher
+to a package that already exists, so `0.2.0` goes out once from a maintainer
+machine:
+
+```bash
+npm login
+npm publish --access public
+```
+
+Then, on npmjs.com, open the package settings and add a Trusted Publisher for
+GitHub Actions: repository `katsugtgz/vodclip`, workflow `publish.yml`,
+environment `npm`. Optionally disallow token publishing after that. From then on
+no `NPM_TOKEN` secret is stored anywhere. The workflow upgrades npm before
+publishing because trusted publishing needs npm CLI 11.5.1 or later, and Node 22
+ships npm 10.
 
 A weekly live smoke test cuts a 5-second clip from a public VOD. It opens an issue when it fails.
 
