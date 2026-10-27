@@ -147,7 +147,7 @@ export default function App() {
           </CardContent>
         </Card>
 
-        <section className="reveal grid grid-cols-3 gap-3 text-center text-xs text-muted" style={{ animationDelay: "180ms" }}>
+        <section className="grid grid-cols-3 gap-3 text-center text-xs text-muted">
           <div className="rounded-2xl border border-line bg-card px-3 py-4">
             <div className="font-semibold text-fg">1</div>
             paste the vod link
