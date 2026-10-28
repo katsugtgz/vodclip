@@ -1,8 +1,11 @@
 @import "tailwindcss";
 
 /*
-  motion tokens — transitions.dev scale
-  open 250ms, close 150ms, pre-scale 0.97, ease cubic-bezier(0.22,1,0.36,1)
+  vodclip — timeline editor aesthetic.
+  base: near-black nitrate room. accent switches to the pasted platform's
+  real brand color (twitch purple, kick green) via [data-platform].
+  type: system sans for prose, mono for everything the machine echoes.
+  motion tokens — open 250ms, pre-scale 0.97, ease cubic-bezier(0.22,1,0.36,1)
 */
 :root {
   --p1: 120ms;
@@ -10,16 +13,28 @@
   --p2-close: 150ms;
   --p2-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --pre-scale: 0.97;
+  --accent: #a970ff;
+  --on-accent: #ffffff;
 }
 
 @theme {
-  --color-bg: #0f0f0f;
-  --color-card: #1a1a1a;
+  --color-bg: #0c0c0e;
+  --color-card: #141417;
   --color-line: rgba(255, 255, 255, 0.08);
-  --color-fg: #f4f4f4;
-  --color-muted: #8a8a8a;
-  --color-accent: #857df5;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  --color-fg: #f2f2f4;
+  --color-muted: #8b8b93;
+  --color-accent: var(--accent);
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+/* platform brand colors — real, not chosen */
+.app[data-platform="twitch"] {
+  --accent: #a970ff; /* twitch purple */
+  --on-accent: #ffffff;
+}
+.app[data-platform="kick"] {
+  --accent: #53fc18; /* kick green */
+  --on-accent: #0c0c0e;
 }
 
 html {
@@ -30,6 +45,48 @@ html {
   -webkit-font-smoothing: antialiased;
 }
 
+/* display heading: sans, deliberately tight, no mono */
+.display {
+  font-variation-settings: normal;
+  letter-spacing: -0.015em;
+}
+
+/* room glow — one accent wash top of page, sits behind everything */
+.app {
+  position: relative;
+  isolation: isolate;
+}
+.app::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: -30dvh;
+  height: 60dvh;
+  background: radial-gradient(
+    60% 100% at 50% 0%,
+    color-mix(in oklab, var(--accent) 14%, transparent),
+    transparent 70%
+  );
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* accent color transitions when the platform changes under your cursor */
+.app,
+.app .text-accent,
+.app [class*="text-accent"],
+.app [class*="border-accent"],
+.app [class*="bg-accent"],
+.app .track,
+.app .clip-win {
+  transition: none;
+}
+.app .clip-win,
+.app .track {
+  transition: left var(--p2-open) var(--p2-ease), width var(--p2-open) var(--p2-ease),
+    background-color 250ms ease, border-color 250ms ease;
+}
+
 /* slim scrollbars, command row only shows its bar on hover */
 code::-webkit-scrollbar {
   height: 6px;
@@ -37,13 +94,12 @@ code::-webkit-scrollbar {
 code::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.15);
   border-radius: 3px;
-  opacity: 0;
 }
 code:hover::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.25);
 }
 
-/* panel reveal — transitions.dev: pre-scaled, expo-out */
+/* panel reveal — pre-scaled, expo-out */
 @keyframes panel-in {
   from {
     opacity: 0;
@@ -71,7 +127,7 @@ code:hover::-webkit-scrollbar-thumb {
 .reveal-stagger > *:nth-child(2) { animation-delay: 45ms; }
 .reveal-stagger > *:nth-child(3) { animation-delay: 90ms; }
 
-/* slot-text roll cell — textmotion.dev: 300ms roll, transform only, clipped cell */
+/* slot-text roll cell — 300ms roll, transform only, clipped cell */
 .slot-cell {
   display: inline-block;
   position: relative;
@@ -99,11 +155,11 @@ code:hover::-webkit-scrollbar-thumb {
 }
 
 ::selection {
-  background: var(--color-accent);
-  color: #fff;
+  background: var(--accent);
+  color: var(--on-accent);
 }
 
-/* error state shake — transitions.dev catalog */
+/* error state shake */
 @keyframes shake {
   10%, 90% { transform: translateX(-1px); }
   20%, 80% { transform: translateX(2px); }
@@ -115,5 +171,90 @@ code:hover::-webkit-scrollbar-thumb {
   animation: shake 400ms var(--p2-ease) both;
   @media (prefers-reduced-motion: reduce) {
     animation: none;
+  }
+}
+
+/* THE moment: the cut window on a vod-length track.
+   filmstrip ticks, playhead at zero, the clip rides the rail. */
+.track {
+  position: relative;
+  height: 44px;
+  border-radius: 10px;
+  border: 1px solid var(--color-line);
+  background:
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.07) 0 1px,
+      transparent 1px 28px
+    ),
+    rgba(255, 255, 255, 0.03);
+  overflow: hidden;
+  contain: inline-size;
+}
+
+.clip-win {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-inline: 2px solid var(--accent);
+  background: color-mix(in oklab, var(--accent) 26%, transparent);
+  border-radius: 6px;
+}
+
+.clip-win::after {
+  /* handle ticks, like an NLE trim grip */
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  inset-inline: 4px;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      color-mix(in oklab, var(--accent) 80%, white 20%) 0 1.5px,
+      transparent 1.5px 9px
+    );
+  opacity: 0.9;
+}
+
+/* steps — a real sequence, one line each, mono numerals */
+.steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.75rem;
+  color: var(--color-muted);
+}
+.steps li {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  border-top: 1px solid var(--color-line);
+  padding-top: 0.75rem;
+  font-family: var(--font-mono);
+}
+.steps li span {
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+}
+
+/* focus ring parity for the whole app */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* below-the-fold-ish footer stays cheap */
+footer {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 40px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .clip-win,
+  .track {
+    transition: none;
   }
 }
