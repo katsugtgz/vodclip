@@ -5,7 +5,7 @@ import { Button } from "./components/button";
 import { Input } from "./components/input";
 import { Badge } from "./components/badge";
 import { RollText } from "./components/roll-text";
-import { Copy, Check, Github, Terminal, Link2, LoaderCircle } from "lucide-react";
+import { Copy, Check, Github, Link2, Scissors } from "lucide-react";
 
 export default function App() {
   // deep-link support: ?u=<vod url>&t=<start>&d=<duration>
@@ -36,10 +36,18 @@ export default function App() {
     return `npx vodclip@latest "${url.trim()}" ${fmt(startSec).replace(/^00:/, "")} ${durSec}`;
   }, [parsed, url, startSec, durSec]);
 
-  const endStr = useMemo(
-    () => (parsed && parsed.kind === "vod" && durSec != null && !Number.isNaN(startSec) ? fmt(startSec + durSec) : null),
-    [parsed, startSec, durSec]
-  );
+  // the cut, drawn on a vod-length track: where the clip window lands
+  const track = useMemo(() => {
+    if (!parsed || parsed.kind !== "vod" || Number.isNaN(startSec) || durSec == null || startSec < 0) return null;
+    const end = startSec + durSec;
+    const total = Math.max(end + Math.max(durSec, 30), 900);
+    return {
+      end,
+      total,
+      left: Math.min((startSec / total) * 100, 98),
+      width: Math.max((durSec / total) * 100, 1.5),
+    };
+  }, [parsed, startSec, durSec]);
 
   async function copy() {
     await navigator.clipboard.writeText(command);
@@ -48,25 +56,36 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-dvh bg-bg text-fg">
-      <header className="mx-auto flex max-w-2xl items-center justify-between px-6 pt-8">
-        <a href="#" className="flex items-center gap-2 text-sm font-semibold tracking-tight">
-          <Terminal className="size-4 text-accent" />
+    <div className="app min-h-dvh bg-bg text-fg" data-platform={parsed?.platform ?? "none"}>
+      <header className="mx-auto flex max-w-3xl items-center justify-between px-6 pt-8">
+        <a href="#" className="flex items-center gap-2.5 font-mono text-sm font-semibold tracking-tight">
+          <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true" className="text-accent">
+            <rect x="1" y="4" width="18" height="12" rx="3" fill="none" stroke="currentColor" strokeWidth="1.5" />
+            <line x1="5" y1="4" x2="5" y2="16" stroke="currentColor" strokeWidth="1.5" />
+            <line x1="9" y1="4" x2="9" y2="16" stroke="currentColor" strokeWidth="1.5" />
+            <rect x="11.5" y="7" width="5.5" height="6" rx="1" fill="currentColor" />
+          </svg>
           vodclip
         </a>
-        <Button variant="ghost" size="sm" className="h-8 gap-2 text-xs" onClick={() => location.href = "https://github.com/katsugtgz/vodclip"}>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 gap-2 font-mono text-xs"
+          onClick={() => location.href = "https://github.com/katsugtgz/vodclip"}
+        >
           <Github className="size-3.5" />
           github
         </Button>
       </header>
 
-      <main className="mx-auto flex max-w-2xl flex-col gap-10 px-6 pb-24 pt-20 sm:pt-28">
-        <section className="reveal text-center">
-          <h1 className="text-balance text-4xl font-semibold tracking-tighter sm:text-5xl">
-            cut a clip from any twitch or kick vod.
+      <main className="mx-auto flex max-w-3xl flex-col gap-12 px-6 pb-24 pt-16 sm:pt-24">
+        <section className="reveal">
+          <h1 className="display max-w-[16ch] text-balance text-4xl font-semibold leading-[1.05] tracking-tight sm:text-6xl">
+            cut the moment out of the vod.
           </h1>
-          <p className="mx-auto mt-4 max-w-md text-balance text-base text-muted">
-            paste a link. tune the cut. copy the command. run it in your terminal, done.
+          <p className="mt-5 max-w-[52ch] text-pretty text-base leading-relaxed text-muted">
+            paste a twitch or kick link, set the in and out points, copy one command.
+            yt-dlp does the cutting — no account, no upload, no tracking.
           </p>
         </section>
 
@@ -76,38 +95,40 @@ export default function App() {
               <Link2 className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted" />
               <Input
                 placeholder="https://www.twitch.tv/videos/2883843627?t=09h25m19s"
-                className={`pl-11 pr-28 ${invalid ? "animate-shake border-red-500/60" : ""}`}
+                className={`pl-11 pr-28 font-mono text-sm ${invalid ? "animate-shake border-red-500/60" : ""}`}
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 spellCheck={false}
                 autoFocus
               />
               {parsed && (
-                <Badge className="absolute right-3 top-1/2 -translate-y-1/2 border-accent/30 bg-accent/10 text-accent">
+                <Badge className="absolute right-3 top-1/2 -translate-y-1/2 border-accent/40 bg-card font-mono text-accent">
                   {parsed.platform} {parsed.kind}
                 </Badge>
               )}
             </div>
             {invalid && (
-              <p className="reveal text-xs text-red-400">
+              <p className="reveal font-mono text-xs text-red-400">
                 not a twitch or kick link. paste a vod or clip url from either platform.
               </p>
             )}
 
             {parsed && parsed.kind === "vod" && (
               <div className="reveal-stagger grid grid-cols-2 gap-3">
-                <label className="flex flex-col gap-2">
-                  <span className="text-xs text-muted">start</span>
+                <label className="field flex flex-col gap-2">
+                  <span className="field-label font-mono text-[11px] uppercase tracking-wider text-muted">start</span>
                   <Input
+                    className="font-mono text-sm"
                     placeholder={parsed.t ?? "0:00:00"}
                     value={start}
                     onChange={(e) => setStart(e.target.value)}
                     spellCheck={false}
                   />
                 </label>
-                <label className="flex flex-col gap-2">
-                  <span className="text-xs text-muted">duration (seconds)</span>
+                <label className="field flex flex-col gap-2">
+                  <span className="field-label font-mono text-[11px] uppercase tracking-wider text-muted">duration (seconds)</span>
                   <Input
+                    className="font-mono text-sm"
                     inputMode="numeric"
                     value={duration}
                     onChange={(e) => setDuration(e.target.value.replace(/\D/g, ""))}
@@ -116,30 +137,39 @@ export default function App() {
               </div>
             )}
 
+            {track && (
+              <div className="reveal-stagger flex flex-col gap-2">
+                <div className="track" aria-hidden="true">
+                  <div className="clip-win" style={{ left: `${track.left}%`, width: `${track.width}%` }} />
+                </div>
+                <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 font-mono text-[11px] text-muted">
+                  <span>
+                    in <span className="text-fg">{fmt(startSec)}</span>
+                    {" "}out <RollText value={fmt(track.end)} className="text-accent" />
+                  </span>
+                  <span>cut window · {durSec}s of a {fmt(track.total).replace(/^00:/, "")} vod</span>
+                </div>
+              </div>
+            )}
+
             {command && (
               <div className="reveal flex flex-col gap-3">
-                <div className="flex items-center justify-between text-xs text-muted">
+                <div className="flex items-center justify-between font-mono text-xs text-muted">
                   <span className="flex items-center gap-1.5">
-                    <LoaderCircle className="size-3" />
-                    {parsed.kind === "clip"
-                      ? "full clip, no timestamps needed"
-                      : <>
-                          cut {fmt(startSec)} <span aria-hidden>→</span>{" "}
-                          <RollText value={endStr} className="font-mono text-accent" />
-                        </>
-                    }
+                    <Scissors className="size-3 text-accent" />
+                    {parsed.kind === "clip" ? "full clip — timestamps ignored" : "the command"}
                   </span>
-                  {parsed.kind === "vod" && <span className="font-mono">{durSec}s</span>}
+                  {parsed.kind === "vod" && <span>{durSec}s</span>}
                 </div>
-                <div className="flex items-center gap-2 rounded-xl border border-line bg-black/40 p-1 pl-4">
+                <div className="flex items-center gap-2 rounded-xl border border-accent/30 bg-black/50 p-1 pl-4">
                   <code className="min-w-0 flex-1 overflow-x-auto whitespace-nowrap py-2.5 font-mono text-[13px] text-fg/90">
                     {command}
                   </code>
-                  <Button size="icon" onClick={copy} aria-label="copy command">
-                    {copied ? <Check className="text-white" /> : <Copy />}
+                  <Button size="icon" className="text-[color:var(--on-accent)]" onClick={copy} aria-label="copy command">
+                    {copied ? <Check /> : <Copy />}
                   </Button>
                 </div>
-                <p className="text-xs text-muted">
+                <p className="font-mono text-[11px] leading-relaxed text-muted">
                   needs <a className="text-accent underline decoration-accent/40 underline-offset-2" href="https://github.com/yt-dlp/yt-dlp#installation" target="_blank" rel="noreferrer">yt-dlp</a> on your path. public vods only, no login.
                 </p>
               </div>
@@ -147,23 +177,14 @@ export default function App() {
           </CardContent>
         </Card>
 
-        <section className="reveal grid grid-cols-3 gap-3 text-center text-xs text-muted" style={{ animationDelay: "180ms" }}>
-          <div className="rounded-2xl border border-line bg-card px-3 py-4">
-            <div className="font-semibold text-fg">1</div>
-            paste the vod link
-          </div>
-          <div className="rounded-2xl border border-line bg-card px-3 py-4">
-            <div className="font-semibold text-fg">2</div>
-            set start + length
-          </div>
-          <div className="rounded-2xl border border-line bg-card px-3 py-4">
-            <div className="font-semibold text-fg">3</div>
-            run the command
-          </div>
-        </section>
+        <ol className="steps reveal">
+          <li><span className="text-accent">01</span> paste the vod link</li>
+          <li><span className="text-accent">02</span> set start + length</li>
+          <li><span className="text-accent">03</span> run the command</li>
+        </ol>
       </main>
 
-      <footer className="mx-auto flex max-w-2xl items-center justify-between px-6 pb-8 text-xs text-muted">
+      <footer className="mx-auto flex max-w-3xl items-center justify-between px-6 pb-8 font-mono text-[11px] text-muted">
         <span>no account · no tracking · open source</span>
         <a className="transition-colors hover:text-fg" href="https://github.com/katsugtgz/vodclip" target="_blank" rel="noreferrer">
           MIT licensed
