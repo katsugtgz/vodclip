@@ -39,6 +39,6 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "eslint": "^10.0.2",
-    "hono": "^4.13.12"
+    "hono": "^4.13.14"
   }
 }
